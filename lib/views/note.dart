@@ -1,59 +1,80 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app1/inherited_widgets/note_inherited_widget.dart';
 
 enum NoteMode {
   Editing,
   Adding,
 }
-class Note  extends StatelessWidget {
 
-  final NoteMode _noteMode;
+class Note extends StatefulWidget {
+  final NoteMode noteMode;
 
-  Note(this._noteMode);
+  Note(this.noteMode);
+
+  @override
+  _NoteState createState() => _NoteState();
+}
+
+class _NoteState extends State<Note> {
+  final TextEditingController _titleController = TextEditingController();
+  final TextEditingController _textController = TextEditingController();
+  List<Map<String, String>> get _notes => NoteInheritedWidget.of(context).notes;
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-            _noteMode == NoteMode.Adding ? 'Add note' : 'Edit note'
-        ),
+        title:
+            Text(widget.noteMode == NoteMode.Adding ? 'Add note' : 'Edit note'),
       ),
       body: Padding(
         padding: const EdgeInsets.all(40.0),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center ,
+          mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             TextField(
-            decoration:  InputDecoration(
-              hintText:  'Note title'
+              controller: _titleController,
+              decoration: InputDecoration(hintText: 'Note title'),
             ),
+            Container(
+              height: 8,
             ),
-            Container(height: 8,),
             TextField(
-              decoration:  InputDecoration(
-                  hintText:  'Note title'
-              ),
+              controller: _textController,
+              decoration: InputDecoration(hintText: 'Note title'),
             ),
-            Container(height: 16.0,),
+            Container(
+              height: 16.0,
+            ),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-              children: <Widget> [
-                _NoteButton('Save',Colors.blue, () {
-                  Navigator.pop(context);
-                }),
+              children: <Widget>[
+                _NoteButton('Save', Colors.blue, () {
+                  if (widget?.noteMode == NoteMode.Adding) {
+                    final title = _titleController.text;
+                    final text = _textController.text;
 
-                Container(height: 16.0,),
-                _NoteButton('Discard',Colors.grey, () {
+                    _notes.add({
+                      'title': title,
+                      'text': text,
+                    });
+                  }
                   Navigator.pop(context);
                 }),
-                _noteMode == NoteMode.Editing ?
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: _NoteButton('Delete',Colors.red, () {
-                      Navigator.pop(context);
-                    }),
-                  )
-                  : Container()
+                Container(
+                  height: 16.0,
+                ),
+                _NoteButton('Discard', Colors.grey, () {
+                  Navigator.pop(context);
+                }),
+                widget.noteMode == NoteMode.Editing
+                    ? Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: _NoteButton('Delete', Colors.red, () {
+                          Navigator.pop(context);
+                        }),
+                      )
+                    : Container()
               ],
             )
           ],
@@ -62,6 +83,7 @@ class Note  extends StatelessWidget {
     );
   }
 }
+
 class _NoteButton extends StatelessWidget {
   final String _text;
   final Color _color;
@@ -72,12 +94,12 @@ class _NoteButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialButton(
       onPressed: _onPressed,
-      child:  Text(
+      child: Text(
         _text,
         style: TextStyle(color: Colors.white),
       ),
       height: 50,
-      minWidth:  100,
+      minWidth: 100,
       color: _color,
     );
   }
